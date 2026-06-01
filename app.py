@@ -7,270 +7,280 @@ from openai import OpenAI
 #  PAGE CONFIG
 # ─────────────────────────────────────────────
 st.set_page_config(
-    page_title="Ruang Pena · Asisten Sastra",
+    page_title="Ruang Pena",
     page_icon="🪶",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 # ─────────────────────────────────────────────
-#  GLOBAL CSS — "Ink & Parchment" aesthetic
+#  CSS — Clean Dark Minimalist
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
-/* ── Google Fonts ── */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Serif+Display:ital@0;1&display=swap');
 
-/* ── Palette ── */
 :root {
-    --parchment:   #f5f0e8;
-    --parchment2:  #ede6d5;
-    --ink:         #1c1410;
-    --ink-faded:   #4a3f35;
-    --sepia:       #8b6b4a;
-    --sepia-light: #c4a882;
-    --gold:        #b8860b;
-    --gold-light:  #d4a832;
-    --crimson:     #8b1a1a;
-    --sidebar-bg:  #211a14;
-    --sidebar-txt: #e8dcc8;
-    --shadow:      rgba(28,20,16,.18);
+    --bg:          #0f0f0f;
+    --surface:     #161616;
+    --surface2:    #1e1e1e;
+    --border:      #2a2a2a;
+    --border2:     #333333;
+    --text:        #f0f0f0;
+    --text-muted:  #888888;
+    --text-faint:  #444444;
+    --accent:      #e8ff47;
+    --accent-dim:  rgba(232,255,71,.12);
+    --accent-glow: rgba(232,255,71,.06);
+    --user-bg:     #1e1e1e;
+    --ai-bg:       #161616;
+    --radius:      10px;
 }
 
-/* ── Base / Body ── */
 html, body, [class*="css"] {
-    font-family: 'Crimson Pro', Georgia, serif;
-    background-color: var(--parchment);
-    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    background-color: var(--bg) !important;
+    color: var(--text);
 }
 
-/* ── Parchment texture overlay ── */
-.stApp::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-}
-
-/* ── Hide Streamlit chrome ── */
+/* hide streamlit chrome */
 #MainMenu, footer, header { visibility: hidden; }
+
 .block-container {
-    padding-top: 1.5rem;
+    padding-top: 2rem;
     padding-bottom: 2rem;
-    max-width: 860px;
+    max-width: 780px;
 }
 
 /* ── Sidebar ── */
 [data-testid="stSidebar"] {
-    background: var(--sidebar-bg) !important;
-    border-right: 2px solid var(--gold) !important;
+    background: var(--surface) !important;
+    border-right: 1px solid var(--border) !important;
 }
-[data-testid="stSidebar"] * {
-    color: var(--sidebar-txt) !important;
+[data-testid="stSidebar"] * { color: var(--text) !important; }
+
+[data-testid="stSidebar"] .stRadio > label {
+    display: none;
+}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] {
+    gap: 2px;
+    display: flex;
+    flex-direction: column;
 }
 [data-testid="stSidebar"] .stRadio label {
-    font-family: 'Cormorant Garamond', serif !important;
-    font-size: 1.05rem !important;
-    letter-spacing: .03em;
-    transition: color .2s;
+    font-size: .92rem !important;
+    font-weight: 400 !important;
+    letter-spacing: .01em;
+    padding: .55rem .75rem !important;
+    border-radius: 6px !important;
+    transition: background .15s, color .15s;
+    cursor: pointer;
 }
 [data-testid="stSidebar"] .stRadio label:hover {
-    color: var(--gold-light) !important;
+    background: var(--surface2) !important;
 }
 [data-testid="stSidebar"] [data-baseweb="radio"] div {
-    background-color: var(--gold) !important;
-    border-color: var(--gold) !important;
-}
-/* sidebar divider */
-[data-testid="stSidebar"] hr {
-    border-color: var(--sepia) !important;
-    opacity: .4;
+    background-color: var(--accent) !important;
+    border-color: var(--accent) !important;
+    width: 10px !important;
+    height: 10px !important;
 }
 
-/* ── Sidebar header ── */
-.sidebar-header {
-    font-family: 'IM Fell English', serif;
-    font-size: 1.55rem;
-    color: var(--gold-light);
-    text-align: center;
-    line-height: 1.3;
-    margin-bottom: .2rem;
-}
-.sidebar-sub {
-    font-family: 'Crimson Pro', serif;
-    font-size: .85rem;
-    color: var(--sepia-light);
-    text-align: center;
-    font-style: italic;
-    margin-bottom: 1.2rem;
-    letter-spacing: .06em;
-}
-.sidebar-divider {
-    text-align: center;
-    color: var(--gold);
-    letter-spacing: .2em;
-    font-size: .7rem;
-    margin: 1rem 0;
-    opacity: .6;
-}
-
-/* ── Main title block ── */
-.main-title {
-    font-family: 'IM Fell English', serif;
-    font-size: 2.6rem;
-    color: var(--ink);
-    text-align: center;
-    line-height: 1.2;
+/* ── Sidebar logo area ── */
+.sb-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.45rem;
+    color: var(--text);
     margin-bottom: .15rem;
+    letter-spacing: -.02em;
 }
-.main-title span { color: var(--crimson); }
-.main-sub {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.05rem;
-    color: var(--sepia);
-    text-align: center;
-    font-style: italic;
-    letter-spacing: .08em;
-    margin-bottom: .6rem;
+.sb-logo span { color: var(--accent); }
+.sb-tagline {
+    font-size: .78rem;
+    color: var(--text-muted);
+    margin-bottom: 1.8rem;
+    letter-spacing: .03em;
 }
-.ornament {
-    text-align: center;
-    color: var(--gold);
-    font-size: 1.3rem;
-    letter-spacing: .3em;
-    margin: .4rem 0 1.2rem;
-}
-
-/* ── Mode badge ── */
-.mode-badge {
-    display: inline-block;
-    background: var(--ink);
-    color: var(--gold-light);
-    font-family: 'Cormorant Garamond', serif;
-    font-size: .82rem;
-    letter-spacing: .12em;
-    padding: .22rem .85rem;
-    border-radius: 2px;
-    border: 1px solid var(--gold);
+.sb-section-label {
+    font-size: .68rem;
     text-transform: uppercase;
-    margin-bottom: 1.2rem;
+    letter-spacing: .12em;
+    color: var(--text-faint);
+    margin-bottom: .6rem;
+    margin-top: 1.4rem;
+}
+.sb-desc {
+    font-size: .82rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+    padding: .7rem .8rem;
+    background: var(--surface2);
+    border-radius: 6px;
+    border-left: 2px solid var(--accent);
+    margin-top: .8rem;
+}
+.sb-footer {
+    font-size: .72rem;
+    color: var(--text-faint);
+    margin-top: 2.5rem;
+    text-align: center;
+    line-height: 1.6;
 }
 
-/* ── Chat container card ── */
-.chat-wrapper {
-    background: var(--parchment2);
-    border: 1px solid var(--sepia-light);
-    border-radius: 4px;
-    padding: 1.4rem 1.6rem;
-    box-shadow: 0 4px 24px var(--shadow), inset 0 0 60px rgba(180,150,100,.06);
-    min-height: 200px;
-    margin-bottom: 1rem;
+/* ── Main title ── */
+.page-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.2rem;
+    letter-spacing: -.03em;
+    color: var(--text);
+    margin-bottom: .2rem;
+    line-height: 1.1;
+}
+.page-title span { color: var(--accent); }
+.page-sub {
+    font-size: .88rem;
+    color: var(--text-muted);
+    margin-bottom: 1.6rem;
+    letter-spacing: .01em;
+}
+.mode-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .75rem;
+    font-weight: 500;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: .28rem .75rem;
+    border-radius: 100px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid rgba(232,255,71,.25);
+    margin-bottom: 1.4rem;
 }
 
 /* ── Chat messages ── */
 [data-testid="stChatMessage"] {
     background: transparent !important;
     border: none !important;
-    padding: .2rem 0 !important;
+    padding: .3rem 0 !important;
+    gap: .8rem !important;
 }
-/* User bubble */
+
+/* user bubble */
 [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) .stMarkdown p {
-    background: var(--ink);
-    color: var(--parchment) !important;
-    padding: .7rem 1.1rem;
-    border-radius: 2px 14px 14px 14px;
+    background: var(--user-bg);
+    border: 1px solid var(--border2);
+    padding: .75rem 1rem;
+    border-radius: var(--radius);
+    font-size: .95rem;
+    line-height: 1.65;
     display: inline-block;
-    font-size: 1.02rem;
-    line-height: 1.6;
     max-width: 88%;
-    font-family: 'Crimson Pro', serif;
-    letter-spacing: .01em;
+    color: var(--text);
 }
-/* Assistant bubble */
+
+/* assistant bubble */
 [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) .stMarkdown {
-    background: linear-gradient(135deg, rgba(255,255,255,.55), rgba(245,240,232,.8));
-    border-left: 3px solid var(--gold);
-    padding: .8rem 1.1rem;
-    border-radius: 0 14px 14px 2px;
-    font-size: 1.05rem;
-    line-height: 1.75;
-    font-family: 'Crimson Pro', serif;
-    box-shadow: 0 2px 8px var(--shadow);
+    background: var(--ai-bg);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--accent);
+    padding: .85rem 1.1rem;
+    border-radius: var(--radius);
+    font-size: .95rem;
+    line-height: 1.7;
+    color: var(--text);
 }
 [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) .stMarkdown p {
     margin-bottom: .5rem;
 }
-/* Avatars */
+[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) .stMarkdown strong {
+    color: var(--accent);
+    font-weight: 500;
+}
+
+/* avatars */
 [data-testid="chatAvatarIcon-user"] {
-    background: var(--ink) !important;
-    color: var(--gold-light) !important;
+    background: var(--surface2) !important;
+    color: var(--text-muted) !important;
+    border: 1px solid var(--border2) !important;
 }
 [data-testid="chatAvatarIcon-assistant"] {
-    background: var(--gold) !important;
-    color: var(--ink) !important;
+    background: var(--accent-dim) !important;
+    color: var(--accent) !important;
+    border: 1px solid rgba(232,255,71,.3) !important;
 }
 
 /* ── Chat input ── */
 [data-testid="stChatInput"] {
-    border: 1.5px solid var(--sepia-light) !important;
-    border-radius: 4px !important;
-    background: var(--parchment) !important;
-    box-shadow: 0 2px 12px var(--shadow) !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--border2) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: none !important;
+}
+[data-testid="stChatInput"]:focus-within {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px var(--accent-glow) !important;
 }
 [data-testid="stChatInput"] textarea {
-    font-family: 'Crimson Pro', serif !important;
-    font-size: 1.05rem !important;
-    color: var(--ink) !important;
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: .93rem !important;
+    color: var(--text) !important;
     background: transparent !important;
+    caret-color: var(--accent) !important;
 }
 [data-testid="stChatInput"] textarea::placeholder {
-    color: var(--sepia-light) !important;
-    font-style: italic !important;
+    color: var(--text-faint) !important;
 }
 
-/* ── Clear button ── */
+/* ── Buttons ── */
 .stButton button {
     background: transparent !important;
-    border: 1px solid var(--sepia-light) !important;
-    color: var(--sepia) !important;
-    font-family: 'Cormorant Garamond', serif !important;
-    font-size: .9rem !important;
-    letter-spacing: .08em !important;
-    border-radius: 2px !important;
-    transition: all .25s !important;
+    border: 1px solid var(--border2) !important;
+    color: var(--text-muted) !important;
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: .82rem !important;
+    font-weight: 400 !important;
+    border-radius: 6px !important;
+    letter-spacing: .02em !important;
+    transition: all .18s !important;
+    padding: .35rem .9rem !important;
 }
 .stButton button:hover {
-    background: var(--ink) !important;
-    color: var(--gold-light) !important;
-    border-color: var(--gold) !important;
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+    background: var(--accent-dim) !important;
 }
 
 /* ── Spinner ── */
 [data-testid="stSpinner"] p {
-    font-family: 'Cormorant Garamond', serif !important;
-    font-style: italic !important;
-    color: var(--sepia) !important;
-    letter-spacing: .06em;
+    font-family: 'DM Sans', sans-serif !important;
+    color: var(--text-muted) !important;
+    font-size: .85rem !important;
 }
 
-/* ── Info / error boxes ── */
+/* ── Divider ── */
+hr { border-color: var(--border) !important; }
+
+/* ── Error / info ── */
 .stAlert {
-    font-family: 'Crimson Pro', serif !important;
-    border-radius: 3px !important;
+    background: var(--surface2) !important;
+    border-color: var(--border2) !important;
+    color: var(--text) !important;
+    border-radius: 6px !important;
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: .88rem !important;
 }
 
 /* ── Scrollbar ── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--parchment2); }
-::-webkit-scrollbar-thumb { background: var(--sepia-light); border-radius: 3px; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
-/* ── Responsive ── */
-@media (max-width: 768px) {
-    .main-title { font-size: 1.9rem; }
-    .block-container { padding-left: 1rem; padding-right: 1rem; }
+/* ── Caption ── */
+.stImage + p, .caption {
+    font-size: .75rem !important;
+    color: var(--text-faint) !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -284,57 +294,64 @@ if "OPENAI_API_KEY" in st.secrets:
     llm = ChatOpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY)
     client = OpenAI(api_key=OPENAI_API_KEY)
 else:
-    st.error("🔑 OpenAI API Key tidak ditemukan. Mohon konfigurasikan di Streamlit Cloud Secrets.")
+    st.error("API Key tidak ditemukan. Tambahkan OPENAI_API_KEY di Streamlit Secrets.")
     st.stop()
 
 
 # ─────────────────────────────────────────────
-#  SYSTEM PROMPTS
+#  DATA
 # ─────────────────────────────────────────────
-PROMPTS = {
-    "✒️ Asisten Umum": (
-        "Kamu adalah asisten penulis sastra yang hangat, bijaksana, dan puitis. "
-        "Bantu pengguna dengan segala pertanyaan seputar penulisan kreatif, tata bahasa, "
-        "gaya bercerita, atau sekadar obrolan santai soal dunia sastra. "
-        "Gunakan bahasa yang elegan namun mudah dipahami."
-    ),
-    "🌀 Pemicu Plot Twist": (
-        "Kamu adalah seorang Story Doctor — ahli bedah alur cerita yang jenius. "
-        "Ketika pengguna memberikan premis atau situasi cerita yang buntu, "
-        "berikan tepat 3 ide 'plot twist' yang segar, tak terduga, dan bebas klise. "
-        "Untuk setiap twist, jelaskan mengapa ia mampu menggerakkan emosi pembaca secara lebih dalam. "
-        "Gunakan gaya bahasa yang dramatis dan menginspirasi."
-    ),
-    "🌹 Generator Metafora": (
-        "Kamu adalah seorang penyair berbakat yang hidup di persimpangan antara bahasa dan perasaan. "
-        "Ketika pengguna memberikan kalimat biasa, ubah menjadi 3–4 variasi kalimat puitis "
-        "yang kaya majas: metafora, personifikasi, simile, dan imaji indrawi. "
-        "Sertakan rima jika alami. Jelaskan nuansa emosi setiap variasi dengan singkat dan indah."
-    ),
-    "🎭 Wawancara Karakter": (
-        "Kamu sedang melakukan ROLEPLAY. Pengguna akan mewawancarai sebuah karakter fiksi. "
-        "Minta pengguna mendeskripsikan karakternya jika belum jelas. "
-        "Lalu JAWAB SEMUA PERTANYAAN SEPENUHNYA SEBAGAI KARAKTER TERSEBUT — "
-        "gunakan sudut pandang orang pertama (Aku/Saya). "
-        "Ekspresikan kepribadian, luka batin, dan keunikan karakter lewat pilihan kata dan ritme bicaranya. "
-        "Tetap dalam karakter selama percakapan berlangsung."
-    ),
-    "🖼️ Generator Ilustrasi": None,  # handled separately
+MODES = {
+    "✒️  Asisten Umum": {
+        "desc": "Teman diskusi serba-bisa untuk penulisan dan sastra.",
+        "placeholder": "Apa yang ingin kamu tulis hari ini?",
+        "prompt": (
+            "Kamu adalah asisten penulis sastra yang cerdas dan hangat. "
+            "Bantu pengguna dengan pertanyaan seputar penulisan kreatif, tata bahasa, "
+            "gaya bercerita, atau obrolan santai tentang dunia sastra. "
+            "Gunakan bahasa yang natural, lugas, dan menginspirasi."
+        ),
+    },
+    "🌀  Pemicu Plot Twist": {
+        "desc": "Deblokirkan alur ceritamu dengan twist yang segar.",
+        "placeholder": "Ceritakan premis atau situasi cerita yang sedang buntu...",
+        "prompt": (
+            "Kamu adalah Story Doctor — ahli bedah alur cerita. "
+            "Berikan tepat 3 plot twist yang segar, tak terduga, dan bebas klise. "
+            "Untuk setiap twist, jelaskan singkat mengapa ia menggerakkan emosi pembaca lebih dalam."
+        ),
+    },
+    "🌹  Generator Metafora": {
+        "desc": "Ubah kalimat biasa menjadi bahasa yang puitis.",
+        "placeholder": "Ketik kalimat yang ingin diubah menjadi lebih puitis...",
+        "prompt": (
+            "Kamu adalah penyair berbakat. Ubah kalimat biasa yang diberikan pengguna "
+            "menjadi 3–4 variasi kalimat puitis yang kaya majas: metafora, personifikasi, simile. "
+            "Jelaskan nuansa emosi setiap variasi secara singkat."
+        ),
+    },
+    "🎭  Wawancara Karakter": {
+        "desc": "Hidupkan karaktermu lewat sesi roleplay interaktif.",
+        "placeholder": "Deskripsikan karaktermu, lalu mulai bertanya...",
+        "prompt": (
+            "Kamu melakukan ROLEPLAY sebagai karakter fiksi yang dibuat pengguna. "
+            "Jika belum ada deskripsi karakter, minta dulu. "
+            "Jawab semua pertanyaan sebagai karakter tersebut dari sudut pandang orang pertama. "
+            "Ekspresikan kepribadian dan keunikan karakter lewat gaya bicara."
+        ),
+    },
+    "🖼️  Generator Ilustrasi": {
+        "desc": "Visualisasikan adegan ceritamu dengan DALL-E 3.",
+        "placeholder": "Gambarkan suasana atau adegan yang ingin divisualisasikan...",
+        "prompt": None,
+    },
 }
 
-MODE_PLACEHOLDERS = {
-    "✒️ Asisten Umum":         "Apa yang ingin kamu tulis hari ini?",
-    "🌀 Pemicu Plot Twist":    "Ceritakan premis atau situasi yang sedang buntu...",
-    "🌹 Generator Metafora":   "Ketik kalimat yang ingin diubah menjadi puisi...",
-    "🎭 Wawancara Karakter":   "Deskripsikan karaktermu, lalu mulai bertanya...",
-    "🖼️ Generator Ilustrasi": "Gambarkan suasana atau adegan yang ingin kamu visualisasikan...",
-}
-
 
 # ─────────────────────────────────────────────
-#  CORE FUNCTIONS
+#  HELPERS
 # ─────────────────────────────────────────────
-def get_chat_response(user_input: str, history: list, system_prompt: str) -> str:
+def get_chat_response(user_input, history, system_prompt):
     messages = [SystemMessage(content=system_prompt)]
     for msg in history[-10:]:
         if msg["role"] == "user":
@@ -345,69 +362,48 @@ def get_chat_response(user_input: str, history: list, system_prompt: str) -> str
     return llm.invoke(messages).content
 
 
-def get_image_url(prompt: str) -> str:
+def get_image_url(prompt):
     try:
         resp = client.images.generate(
-            model="gpt-image-1-mini",
-            prompt=(
-                "A highly artistic, atmospheric, painterly illustration for a literary novel — "
-                "warm sepia and ink tones, fine detail, storytelling mood. "
-                f"{prompt}"
-            ),
+            model="dall-e-3",
+            prompt=f"Cinematic, painterly illustration for a literary story. Clean composition, moody atmosphere. {prompt}",
             size="1024x1024",
             quality="standard",
             n=1,
         )
         return resp.data[0].url
-    except Exception as exc:
-        return f"ERROR:{exc}"
+    except Exception as e:
+        return f"ERROR:{e}"
 
 
 # ─────────────────────────────────────────────
 #  SIDEBAR
 # ─────────────────────────────────────────────
 with st.sidebar:
-    st.markdown('<div class="sidebar-header">🪶 Ruang Pena</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sidebar-sub">Asisten Sastra & Penulis</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sidebar-divider">⊱ ── ✦ ── ⊰</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sb-logo">Ruang<span>.</span>Pena</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sb-tagline">Asisten sastra & penulisan kreatif</div>', unsafe_allow_html=True)
 
-    mode = st.radio(
-        "Pilih Mode Asisten:",
-        list(PROMPTS.keys()),
-        label_visibility="collapsed",
-    )
+    st.markdown('<div class="sb-section-label">Mode</div>', unsafe_allow_html=True)
+    mode = st.radio("", list(MODES.keys()), label_visibility="collapsed")
 
-    st.markdown('<div class="sidebar-divider">⊱ ── ✦ ── ⊰</div>', unsafe_allow_html=True)
-
-    # Mode description cards
-    descriptions = {
-        "✒️ Asisten Umum":         "Teman diskusi serba-bisa untuk pertanyaan penulisan dan sastra.",
-        "🌀 Pemicu Plot Twist":    "Deblokirkan alur ceritamu dengan 3 twist tak terduga.",
-        "🌹 Generator Metafora":   "Ubah kalimat biasa menjadi untaian kata yang puitis.",
-        "🎭 Wawancara Karakter":   "Hidupkan karaktermu lewat sesi roleplay interaktif.",
-        "🖼️ Generator Ilustrasi": "Visualisasikan adegan ceritamu dengan DALL-E 3.",
-    }
     st.markdown(
-        f"<p style='font-style:italic; font-size:.88rem; color:#c4a882; line-height:1.5;'>"
-        f"{descriptions[mode]}</p>",
+        f'<div class="sb-desc">{MODES[mode]["desc"]}</div>',
         unsafe_allow_html=True,
     )
 
-    st.markdown('<div class="sidebar-divider">⊱ ── ✦ ── ⊰</div>', unsafe_allow_html=True)
-
-    if st.button("🗑️  Bersihkan Percakapan", use_container_width=True):
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("Bersihkan percakapan", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 
     st.markdown(
-        "<p style='font-size:.75rem; color:#6b5c4c; text-align:center; margin-top:2rem; "
-        "font-style:italic;'>\"Setiap kalimat adalah pintu menuju dunia baru.\"</p>",
+        '<div class="sb-footer">Dibuat dengan ♡ untuk para penulis</div>',
         unsafe_allow_html=True,
     )
 
 
 # ─────────────────────────────────────────────
-#  SESSION STATE — reset on mode change
+#  SESSION STATE
 # ─────────────────────────────────────────────
 if "current_mode" not in st.session_state:
     st.session_state.current_mode = mode
@@ -424,19 +420,15 @@ if st.session_state.current_mode != mode:
 #  MAIN HEADER
 # ─────────────────────────────────────────────
 st.markdown(
-    '<div class="main-title">Ruang <span>Pena</span></div>',
+    '<div class="page-title">Ruang<span>.</span>Pena</div>'
+    '<div class="page-sub">Di sinilah kata-kata menemukan bentuknya</div>',
     unsafe_allow_html=True,
 )
-st.markdown(
-    '<div class="main-sub">Di sinilah kata-kata menemukan jiwa mereka</div>',
-    unsafe_allow_html=True,
-)
-st.markdown('<div class="ornament">❧ ─── ✦ ─── ❧</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="mode-badge">{mode}</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="mode-pill">{mode.strip()}</div>', unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────
-#  CHAT HISTORY DISPLAY
+#  CHAT HISTORY
 # ─────────────────────────────────────────────
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
@@ -447,33 +439,32 @@ for msg in st.session_state.messages:
 
 
 # ─────────────────────────────────────────────
-#  CHAT INPUT & RESPONSE
+#  INPUT & RESPONSE
 # ─────────────────────────────────────────────
-placeholder = MODE_PLACEHOLDERS.get(mode, "Ketik pesanmu di sini...")
-
-if user_input := st.chat_input(placeholder):
-    # Save & display user message
+if user_input := st.chat_input(MODES[mode]["placeholder"]):
     st.session_state.messages.append({"role": "user", "content": user_input})
     with st.chat_message("user"):
         st.markdown(user_input)
 
-    # Generate & display assistant response
     with st.chat_message("assistant"):
-        if mode == "🖼️ Generator Ilustrasi":
-            with st.spinner("Melukis imajinasimu di atas kanvas digital..."):
+        if mode == "🖼️  Generator Ilustrasi":
+            with st.spinner("Membuat ilustrasi..."):
                 url = get_image_url(user_input)
                 if url.startswith("ERROR:"):
-                    st.error(f"Terjadi kesalahan: {url[6:]}")
+                    st.error(f"Gagal membuat gambar: {url[6:]}")
                 else:
                     st.image(url, use_column_width=True)
-                    st.caption("_Ilustrasi dibuat dengan DALL-E 3 · klik kanan untuk menyimpan_")
+                    st.caption("Ilustrasi oleh DALL-E 3")
                     st.session_state.messages.append(
                         {"role": "assistant", "content": url, "is_image": True}
                     )
         else:
-            with st.spinner("Merangkai kata-kata untukmu..."):
-                system_prompt = PROMPTS[mode]
-                reply = get_chat_response(user_input, st.session_state.messages, system_prompt)
+            with st.spinner("Sedang menulis..."):
+                reply = get_chat_response(
+                    user_input,
+                    st.session_state.messages,
+                    MODES[mode]["prompt"],
+                )
                 st.markdown(reply)
                 st.session_state.messages.append(
                     {"role": "assistant", "content": reply, "is_image": False}
